@@ -92,11 +92,11 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 const ext='target="_blank" rel="noopener noreferrer"';
 const handle=u=>"@"+u.replace(/\/$/,"").split("/").pop();
 
-$("#svc-panel").innerHTML=S.map(s=>`<a href="${s.slug}.html"><b>${esc(s.name)}</b><span>${esc(s.short)}</span></a>`).join("")+`<a class="all" href="services.html">All services</a>`;
-$("#f-svc").innerHTML=S.map(s=>`<li><a href="${s.slug}.html">${esc(s.name)}</a></li>`).join("");
+$("#svc-panel").innerHTML=S.map(s=>`<a href="${s.slug}"><b>${esc(s.name)}</b><span>${esc(s.short)}</span></a>`).join("")+`<a class="all" href="services">All services</a>`;
+$("#f-svc").innerHTML=S.map(s=>`<li><a href="${s.slug}">${esc(s.name)}</a></li>`).join("");
 $("#f-soc").innerHTML=SOCIAL.map(s=>`<li><a ${ext} href="${s.url}" aria-label="OpenFortSec on ${s.name}"><svg aria-hidden="true"><use href="#${s.id}"/></svg></a></li>`).join("");
 const TICK='<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-$("#svlist").innerHTML=S.map((s,i)=>{const k=[1,0,2,3,4,5,6,7][i];s=S[k];return `<a class="scard spot rv${i%2?" d1":""}${i===0?" feat":i===7?" feat rev":""}" href="${s.slug}.html"><div class="sart" aria-hidden="true"><span class="sic"><svg><use href="#i-${SI[s.slug]}"/></svg></span>${D[s.slug]}</div><div class="sbody"><h2>${esc(s.name)}</h2><p>${esc(i===0||i===7?s.overview:s.short)}</p><ul>${s.deliverables.slice(0,i===0||i===7?3:2).map(d=>`<li>${TICK}${esc(d)}</li>`).join("")}</ul><span class="more">Explore ${esc(s.name.toLowerCase())}<svg><use href="#chev"/></svg></span></div></a>`}).join("");
+$("#svlist").innerHTML=S.map((s,i)=>{const k=[1,0,2,3,4,5,6,7][i];s=S[k];return `<a class="scard spot rv${i%2?" d1":""}${i===0?" feat":i===7?" feat rev":""}" href="${s.slug}"><div class="sart" aria-hidden="true"><span class="sic"><svg><use href="#i-${SI[s.slug]}"/></svg></span>${D[s.slug]}</div><div class="sbody"><h2>${esc(s.name)}</h2><p>${esc(i===0||i===7?s.overview:s.short)}</p><ul>${s.deliverables.slice(0,i===0||i===7?3:2).map(d=>`<li>${TICK}${esc(d)}</li>`).join("")}</ul><span class="more">Explore ${esc(s.name.toLowerCase())}<svg><use href="#chev"/></svg></span></div></a>`}).join("");
 function art(n){const W=320,H=200;let m="";
  if(n===0){for(let i=0;i<6;i++)m+=`<rect x="36" y="${44+i*20}" width="${[180,240,150,220,120,200][i]}" height="6" rx="3" fill="#cfe3ff" opacity="${i?0.35:0.9}"/>`;m+=`<circle cx="262" cy="64" r="22" fill="none" stroke="#7cc4ff" stroke-width="3"/><circle cx="262" cy="64" r="6" fill="#7cc4ff"/>`}
  else if(n===1){for(let x=0;x<7;x++)for(let y=0;y<4;y++){const hot=x===4&&y===1;m+=`<rect x="${40+x*36}" y="${36+y*34}" width="26" height="24" rx="4" fill="${hot?"#1a6ff0":"#cfe3ff"}" opacity="${hot?1:0.22}"/>`}m+=`<circle cx="197" cy="82" r="30" fill="none" stroke="#7cc4ff" stroke-width="2.5"/>`}
@@ -180,7 +180,7 @@ tabs.innerHTML=S.map((s,i)=>`<button role="tab" id="tab-${s.slug}" aria-controls
 function showTab(i,focus){const s=S[i];
  [...tabs.children].forEach((b,j)=>{b.setAttribute("aria-selected",j===i);b.tabIndex=j===i?0:-1});
  tp.setAttribute("aria-labelledby","tab-"+s.slug);
- tp.innerHTML=`<div><h3>${esc(s.name)}</h3><p class="lead">${esc(s.overview)}</p><ul>${s.deliverables.map(d=>`<li>${esc(d)}</li>`).join("")}</ul><a class="btn" href="${s.slug}.html">About ${esc(s.name.toLowerCase())}</a></div><div class="dia" aria-hidden="true">${D[s.slug]}</div>`;
+ tp.innerHTML=`<div><h3>${esc(s.name)}</h3><p class="lead">${esc(s.overview)}</p><ul>${s.deliverables.map(d=>`<li>${esc(d)}</li>`).join("")}</ul><a class="btn" href="${s.slug}">About ${esc(s.name.toLowerCase())}</a></div><div class="dia" aria-hidden="true">${D[s.slug]}</div>`;
  tp.classList.remove("swap");void tp.offsetWidth;tp.classList.add("swap");
  if(focus)tabs.children[i].focus()}
 tabs.addEventListener("click",e=>{const b=e.target.closest("button");if(b)showTab([...tabs.children].indexOf(b))});
@@ -194,15 +194,15 @@ function socIcons(){return SOCIAL.map(s=>`<a ${ext} href="${s.url}" aria-label="
 document.querySelectorAll(".closing .sicons").forEach(e=>e.innerHTML=socIcons());
 function renderService(s){const pg=$("#svc-page");
  pg.dataset.title=`${s.name} | OpenFortSec`;pg.dataset.desc=`${s.overview}`;
- pg.innerHTML=`<section class="phd svc dark"><div class="wrap"><div><p class="crumb"><a href="index.html">Home</a> / <a href="services.html">Services</a> / ${esc(s.name)}</p><h1>${esc(s.name)}</h1><p class="lead">${esc(s.overview)}</p><div class="acts"><a class="btn" href="find-us.html">Discuss ${esc(s.name.toLowerCase())}</a></div></div><div class="dia" aria-hidden="true">${D[s.slug]}</div></div></section>
+ pg.innerHTML=`<section class="phd svc dark"><div class="wrap"><div><p class="crumb"><a href="./">Home</a> / <a href="services">Services</a> / ${esc(s.name)}</p><h1>${esc(s.name)}</h1><p class="lead">${esc(s.overview)}</p><div class="acts"><a class="btn" href="find-us">Discuss ${esc(s.name.toLowerCase())}</a></div></div><div class="dia" aria-hidden="true">${D[s.slug]}</div></div></section>
  <section class="sec off"><div class="wrap detail"><div>
  <section class="dblock rv"><h2>Problems it addresses</h2><div class="pfx-head" aria-hidden="true"><span>The problem</span><span>How we help</span></div><div class="pfx">${s.problems.map(([h,d,fx])=>`<div class="pfx-row"><div class="pfx-p"><span class="icn" aria-hidden="true"><svg><use href="#i-warn"/></svg></span><div><h3>${esc(h)}</h3><p>${esc(d)}</p></div></div><div class="pfx-a" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h13m-5-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="pfx-s"><span class="icn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><p><span class="sr">How we help: </span>${esc(fx)}</p></div></div>`).join("")}</div></section>
  <section class="dblock rv"><h2>What the engagement involves</h2><div class="stepc">${s.involves.map(p=>`<div><p>${esc(p)}</p></div>`).join("")}</div></section>
  <section class="dblock rv"><h2>What you receive</h2><div class="cgrid">${s.deliverables.map((p,i)=>`<div class="card2 spot"><div class="cban" style="height:110px" aria-hidden="true"><svg class="bigi" style="width:44px;height:44px"><use href="#i-${["doc","search","gov"][i%3]}"/></svg></div><div class="cb" style="padding:20px 22px 22px"><p style="color:var(--ink);font-weight:500">${esc(p)}</p></div></div>`).join("")}</div></section>
  <section class="dblock rv" style="margin:0"><h2>Who it is for</h2><div class="who"><span class="icn" aria-hidden="true"><svg><use href="#i-user"/></svg></span><p>${esc(s.suits)}</p></div></section>
  </div><aside class="rv d1" aria-label="Enquire and other services"><div class="sticky">
- <div class="acard spot"><span class="icn" aria-hidden="true"><svg><use href="#i-${SI[s.slug]}"/></svg></span><h3>Talk to us about ${esc(s.name.toLowerCase())}</h3><p>Reach OpenFortSec through our official channels to discuss scope and timing.</p><a class="btn" href="find-us.html">Find Us</a><div class="sicons"><span>Or follow us</span>${socIcons()}</div></div>
- <nav class="ocard" aria-label="Other services"><h3>All services</h3>${S.map(o=>`<a href="${o.slug}.html"${o.slug===s.slug?' aria-current="page"':""}><svg aria-hidden="true"><use href="#i-${SI[o.slug]}"/></svg>${esc(o.name)}</a>`).join("")}</nav>
+ <div class="acard spot"><span class="icn" aria-hidden="true"><svg><use href="#i-${SI[s.slug]}"/></svg></span><h3>Talk to us about ${esc(s.name.toLowerCase())}</h3><p>Reach OpenFortSec through our official channels to discuss scope and timing.</p><a class="btn" href="find-us">Find Us</a><div class="sicons"><span>Or follow us</span>${socIcons()}</div></div>
+ <nav class="ocard" aria-label="Other services"><h3>All services</h3>${S.map(o=>`<a href="${o.slug}"${o.slug===s.slug?' aria-current="page"':""}><svg aria-hidden="true"><use href="#i-${SI[o.slug]}"/></svg>${esc(o.name)}</a>`).join("")}</nav>
  </div></aside></div></section>`;
  observe(pg)}
 
