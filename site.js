@@ -220,7 +220,7 @@ document.addEventListener("click",e=>{if(!e.target.closest(".dd"))closeDD()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&panel.classList.contains("open")){closeDD();dd.focus()}});
 mb.addEventListener("click",()=>{const o=list.classList.toggle("open");mb.setAttribute("aria-expanded",o);mb.textContent=o?"Close":"Menu"});
 const pages=[...document.querySelectorAll(".page")];
-function route(){
+function route(){setTimeout(ccStatus,0);
  const parts=location.hash.replace(/^#\/?/,"").split("/").filter(Boolean);let key=parts[0]||"",p;
  if(key==="services"&&parts[1]){const s=S.find(x=>x.slug===parts[1]);if(s){renderService(s);p=$("#svc-page")}}
  else p=pages.find(x=>x.dataset.route===key&&key!=="service"&&key!=="404");
@@ -231,4 +231,47 @@ function route(){
  closeDD();list.classList.remove("open");mb.setAttribute("aria-expanded","false");mb.textContent="Menu";
  window.scrollTo(0,0);if(location.hash)$("#main").focus({preventScroll:true});
  observe(p)}
+/* ---------- cookie consent ---------- */
+/* Paste your Google Analytics 4 Measurement ID here, e.g. "G-ABC123XYZ". Analytics stays off until it is set AND the visitor accepts. */
+const GA_ID = "";
+const CC_KEY="ofs-consent",CC_VER=1,CC_DAYS=365;
+let gaLoaded=false;
+function ccGet(){try{const v=JSON.parse(localStorage.getItem(CC_KEY));if(v&&v.v===CC_VER&&Date.now()-v.t<CC_DAYS*864e5)return v}catch(e){}return null}
+function loadGA(){if(gaLoaded||!/^G-[A-Z0-9]+$/.test(GA_ID))return;gaLoaded=true;
+ window.dataLayer=window.dataLayer||[];window.gtag=function(){window.dataLayer.push(arguments)};
+ gtag("consent","default",{analytics_storage:"granted",ad_storage:"denied",ad_user_data:"denied",ad_personalization:"denied"});
+ gtag("js",new Date());gtag("config",GA_ID,{allow_google_signals:false,allow_ad_personalization_signals:false});
+ const s=document.createElement("script");s.async=true;s.src="https://www.googletagmanager.com/gtag/js?id="+encodeURIComponent(GA_ID);document.head.appendChild(s)}
+function clearGA(){const host=location.hostname,base=host.replace(/^www\./,"");
+ document.cookie.split(";").map(c=>c.split("=")[0].trim()).filter(n=>/^_ga/.test(n)).forEach(n=>{
+  ["", "; domain="+host, "; domain=."+base].forEach(d=>document.cookie=n+"=; Max-Age=0; path=/"+d)})}
+function applyConsent(v){if(v.analytics)loadGA();else{if(gaLoaded&&window.gtag)gtag("consent","update",{analytics_storage:"denied"});clearGA()}ccStatus()}
+function ccStatus(){const el=document.getElementById("ckstat");if(!el)return;
+ if(!/^G-[A-Z0-9]+$/.test(GA_ID)){el.textContent="We don’t currently use analytics or any other optional cookies, so there’s nothing to choose.";el.style.setProperty("--d","#16a34a");return}
+ const v=ccGet();
+ el.textContent=!v?"You haven’t made a choice yet.":v.analytics?"Analytics cookies: allowed.":"Analytics cookies: not allowed. Only strictly necessary storage is used.";
+ el.style.setProperty("--d",!v?"#94a3b8":v.analytics?"#16a34a":"#1a6ff0")}
+function ccSet(analytics){const prev=ccGet(),v={v:CC_VER,analytics:!!analytics,t:Date.now()};
+ try{localStorage.setItem(CC_KEY,JSON.stringify(v))}catch(e){}
+ hideBanner();applyConsent(v);if(prev&&prev.analytics&&!v.analytics&&gaLoaded)location.reload()}
+function showBanner(){if(document.getElementById("cc"))return;const el=document.createElement("div");el.id="cc";el.className="cc";
+ el.setAttribute("role","region");el.setAttribute("aria-label","Cookie consent");
+ el.innerHTML=`<div class="cc-card"><div class="cc-top"><span class="icn" aria-hidden="true"><svg><use href="#i-cookie"/></svg></span><h2>Your privacy</h2></div><p>We’d like to use analytics cookies from Google Analytics to understand how people use our website. They’re only set if you accept. <a href="cookies">Read our cookie policy</a></p><div class="cc-btns"><button type="button" class="btn" data-cc="accept">Accept all</button><button type="button" class="btn alt2" data-cc="reject">Reject all</button></div><button type="button" class="cc-manage" data-cc="manage">Manage preferences</button></div>`;
+ document.body.appendChild(el)}
+function hideBanner(){const el=document.getElementById("cc");if(el)el.remove()}
+function ccDialog(){let d=document.getElementById("ccd");if(!d){d=document.createElement("dialog");d.id="ccd";d.className="ccd";d.setAttribute("aria-labelledby","ccd-h");
+ d.innerHTML=`<div class="ccd-in"><h2 id="ccd-h">Cookie preferences</h2><p>Choose which cookies we can use. You can change this at any time from “Cookie settings” at the bottom of every page.</p>
+ <div class="cc-row"><div><h3>Strictly necessary</h3><p>Remembers your cookie choice. This can’t be switched off.</p></div><span class="cc-on">Always on</span></div>
+ <div class="cc-row"><div><h3><label for="cc-an">Analytics</label></h3><p>Google Analytics counts visits and shows how pages are used, so we can improve the site. Sets the <code>_ga</code> cookies.</p></div><input type="checkbox" id="cc-an" class="cc-sw" role="switch"></div>
+ <div class="cc-btns"><button type="button" class="btn" data-cc="save">Save choices</button><button type="button" class="btn alt2" data-cc="reject">Reject all</button><button type="button" class="btn alt2" data-cc="accept">Accept all</button></div></div>`;
+ document.body.appendChild(d)}
+ const v=ccGet();d.querySelector("#cc-an").checked=!!(v&&v.analytics);
+ if(typeof d.showModal==="function")d.showModal();else d.setAttribute("open","");d.querySelector("#cc-an").focus()}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-cc]");if(!b||!GA_ON)return;const a=b.dataset.cc,d=document.getElementById("ccd");
+ if(a==="manage"){ccDialog();return}
+ if(a==="accept")ccSet(true);else if(a==="reject")ccSet(false);else if(a==="save")ccSet(document.getElementById("cc-an").checked);
+ if(d&&d.open)d.close()});
+const GA_ON=/^G-[A-Z0-9]+$/.test(GA_ID);
+(function(){document.querySelectorAll('[data-cc="manage"]').forEach(b=>b.hidden=!GA_ON);if(!GA_ON){ccStatus();return}
+ const v=ccGet();if(v)applyConsent(v);else{showBanner();ccStatus()}})();
 observe(document.querySelector(".page.on")||document.body);
